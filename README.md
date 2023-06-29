@@ -7,6 +7,7 @@ A simple Seafowl UDF demo, intended to follow in the footsteps of the [Rust exam
 Dependencies: Go, tinygo
 | task | command |
 |---|---|
+| tinygo compile with wasi | `tinygo build -o seafowl-udf-go.wasm -target=wasi`
 | tinygo compile | `tinygo build -o seafowl-udf-go.wasm`
 | tests | `go test -v` |
 | compile (use tinygo for WASM) | `go build` should output `seafowl-udf-go`, run it via `./seafowl-udf-go 1 2` |
