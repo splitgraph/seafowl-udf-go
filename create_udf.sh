@@ -8,11 +8,12 @@ joinByString() {
   printf "%s" "$first" "${@/#/$separator}"
 }
 
-filename="udf.wasm"
-function_name="add_ints"
-wasm_export="add_ints"
+filename="seafowl-udf-go.wasm"
+function_name="AddInts"
+wasm_export="AddInts"
 return_type="BIGINT"
 input_types=("BIGINT" "BIGINT")
+host="localhost:8080"
 
 curl -i -H "Content-Type: application/json" $host/q -d@- <<EOF
 {"query": "CREATE FUNCTION $function_name AS '{
