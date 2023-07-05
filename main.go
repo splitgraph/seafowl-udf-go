@@ -1,42 +1,60 @@
 package main
 
 import (
+	"encoding/binary"
+	"fmt"
 	"unsafe"
-	"tinygo-msgpack"
+
+	msgpack "github.com/wapc/tinygo-msgpack"
 )
-// main is required for the `wasi` target, even if it isn't used.
-func main() { }
+
+func doAdd(a, b int64) int64 {
+	return a + b
+}
 
 //export AddInts
-func doAdd(a, b int) int {
-	sum := a + b
-	return sum
+func AddInts(inputPtr unsafe.Pointer) unsafe.Pointer {
+	// Get input slice
+	input := (*[1 << 30]byte)(inputPtr)[:10:10]
+
+	// Create decoder
+	dec := msgpack.NewDecoder(input)
+
+	var a int64
+	a, err := dec.ReadInt64()
+	if err != nil {
+		panic(err)
+	}
+	dec.Skip()
+
+	var b int64
+	b, err = dec.ReadInt64()
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("b", b)
+
+	sum := doAdd(a, b)
+
+	// Encode result
+	buf := make([]byte, 8)
+	binary.BigEndian.PutUint64(buf, uint64(sum))
+
+	// Return pointer to result
+	return unsafe.Pointer(&buf[0])
 }
 
-func AddInts(pointer uintptr) uintptr {
-	return doAdd(1, 2)
-}
-
-// Required by Seafowl
-//export alloc
-func alloc(size uintptr) unsafe.Pointer {
-	buffer := make([]byte, 0, size)
-	pointer := unsafe.Pointer(&buffer[0])
-	return pointer
-}
-
-// Go is GC'd and doesn't support dealloc, but this is required by wasmtime (?)
-//export dealloc
-func dealloc(pointer uintptr, capacity int32) { }
-
+// placeholder main function b/c it's required for WASM compilation
+func main() {}
 
 /*
-make_scalar_function_wasm_messagepack 
+make_scalar_function_wasm_messagepack
 	Called at function registration time, NOT when the UDF is invoked
 
 line 556 is where the UDF gets called
 
-scale is # of decimal places 
+scale is # of decimal places
 
 add WASI if only for the logging
 
@@ -56,7 +74,7 @@ in order for the host and wasm VM to communicate, they need to write into the me
 
 pass a pointer, _and_ the size
 since we can only return a single value, we return a pointer to a segment of WASM
-memory and the first value has the size 
+memory and the first value has the size
 read_udf_output()
 
 Write 4 bytes (a 32bit integer)
@@ -71,7 +89,7 @@ take these args and run it
 WASI: basically a library with two parts
 Part 1 sits in the host process (seafowl)
 		you can call it from within the WASM program
-		if you have callback fns defined from within the WASM 
+		if you have callback fns defined from within the WASM
 Part 2 is functions that get compiled into the WASM
 	wasi symbols are in your assemblyscript module
 	they don't work unless the library that registers this stuff knows about them
