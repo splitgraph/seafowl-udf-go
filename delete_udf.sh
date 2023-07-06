@@ -1,3 +1,6 @@
+# NOTE: at the time of writing, DROP FUNCTION is not supported.
+# See https://seafowl.io/docs/guides/custom-udf-wasm
+
 filename="seafowl-udf-go.wasm"
 function_name="AddInts"
 wasm_export="AddInts"
