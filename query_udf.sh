@@ -1,7 +1,7 @@
 #! /usr/bin/env bash
 
 # Parameters to set
-function_name="add_ints";
+function_name="AddInts";
 function_arguments="1, 2";
 host="localhost:8080";
 
