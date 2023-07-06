@@ -33,9 +33,9 @@ func AddInts(inputPtr unsafe.Pointer) unsafe.Pointer {
 		panic(err)
 	}
 
-	fmt.Println("b", b)
-
 	sum := doAdd(a, b)
+
+	fmt.Println("a", a, "b", b, "sum", sum)
 
 	// Encode result
 	buf := make([]byte, 8)
