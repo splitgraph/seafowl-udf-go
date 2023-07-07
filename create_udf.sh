@@ -9,8 +9,8 @@ joinByString() {
 }
 
 filename="seafowl-udf-go.wasm"
-function_name="AddInts"
-wasm_export="AddInts"
+function_name="addints"
+wasm_export="addints"
 return_type="BIGINT"
 input_types=("BIGINT" "BIGINT")
 host="localhost:8080"
