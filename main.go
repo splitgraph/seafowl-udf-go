@@ -12,8 +12,8 @@ func doAdd(a, b int64) int64 {
 	return a + b
 }
 
-//export AddInts
-func AddInts(inputPtr unsafe.Pointer) unsafe.Pointer {
+//export addints
+func addints(inputPtr unsafe.Pointer) unsafe.Pointer {
 	// Get input slice
 	input := (*[1 << 30]byte)(inputPtr)[:10:10]
 
