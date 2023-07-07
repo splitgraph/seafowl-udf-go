@@ -1,48 +1,36 @@
 package main
 
 import (
-	"encoding/binary"
 	"fmt"
 	"unsafe"
-
-	msgpack "github.com/wapc/tinygo-msgpack"
 )
 
-func doAdd(a, b int64) int64 {
-	return a + b
+func doAdd(left, right int64) int64 {
+	return left + right
 }
 
-//export addints
-func addints(inputPtr unsafe.Pointer) unsafe.Pointer {
-	// Get input slice
-	input := (*[1 << 30]byte)(inputPtr)[:10:10]
+//export addi64
+func addi64(inputPtr unsafe.Pointer) unsafe.Pointer {
+	wrappedUdf := func(args []interface{}) (interface{}, error) {
+		// Decode the arguments
+		left, ok := args[0].(int64)
+		if !ok {
+			return nil, fmt.Errorf("expected first argument to be int64, got %T", args[0])
+		}
+		right, ok := args[1].(int64)
+		if !ok {
+			return nil, fmt.Errorf("expected second argument to be int64, got %T", args[1])
+		}
 
-	// Create decoder
-	dec := msgpack.NewDecoder(input)
+		// Call the function
+		result := doAdd(left, right)
 
-	var a int64
-	a, err := dec.ReadInt64()
-	if err != nil {
-		panic(err)
+		// Encode the result
+		return result, nil
 	}
-	dec.Skip()
 
-	var b int64
-	b, err = dec.ReadInt64()
-	if err != nil {
-		panic(err)
-	}
-
-	sum := doAdd(a, b)
-
-	fmt.Println("a", a, "b", b, "sum", sum)
-
-	// Encode result
-	buf := make([]byte, 8)
-	binary.BigEndian.PutUint64(buf, uint64(sum))
-
-	// Return pointer to result
-	return unsafe.Pointer(&buf[0])
+	// Call WrapUdf with the wrapped function
+	return WrapUDF(inputPtr, wrappedUdf)
 }
 
 // placeholder main function b/c it's required for WASM compilation
