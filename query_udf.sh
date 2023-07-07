@@ -1,7 +1,7 @@
 #! /usr/bin/env bash
 
 # Parameters to set
-function_name="addints";
+function_name="addi64";
 function_arguments="1, 2";
 host="localhost:8080";
 
