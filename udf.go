@@ -24,7 +24,11 @@ func Decode(buf []byte) (interface{}, error) {
 //export alloc
 func alloc(size uintptr) unsafe.Pointer {
 	buffer := make([]byte, 0, size)
+	if len(buffer) == 0 {
+		log.Fatal(fmt.Errorf("buffer is empty"))
+	}
 	pointer := unsafe.Pointer(&buffer[0])
+	fmt.Println("pointer", pointer)
 	return pointer
 }
 
@@ -33,7 +37,7 @@ func alloc(size uintptr) unsafe.Pointer {
 //export dealloc
 func dealloc(pointer uintptr, capacity int32) {}
 
-func decodeI64(v interface{}) (int64, error) {
+func DecodeI64(v interface{}) (int64, error) {
 	if i64, ok := v.(int64); ok {
 		return i64, nil
 	}
@@ -42,7 +46,6 @@ func decodeI64(v interface{}) (int64, error) {
 
 const SizeNumBytes = int(unsafe.Sizeof(int32(0))) // intended to match Rust's std::mem::size_of::<i32>();
 
-//export ReadInput
 func ReadInput(ptr unsafe.Pointer) []interface{} {
 	// Convert pointer to byte slice
 	sizeBuf := (*[SizeNumBytes]byte)(ptr)[:]
@@ -74,11 +77,9 @@ func ReadInput(ptr unsafe.Pointer) []interface{} {
 	return inputArray
 }
 
-//export WriteOutput
-func WriteOutput(val interface{}) unsafe.Pointer {
+func writeOutput(val interface{}) unsafe.Pointer {
 	// Make a buffer with space for the size at the beginning
-	// TODO pretty sure int64's need to be 8 bytes
-	serializedOutput := make([]byte, SizeNumBytes)
+	serializedOutput := make([]byte, 4+unsafe.Sizeof(int64(0)))
 
 	// Serialize the value
 	err := Encode(val, serializedOutput[SizeNumBytes:])
@@ -95,7 +96,6 @@ func WriteOutput(val interface{}) unsafe.Pointer {
 	return unsafe.Pointer(&serializedOutput[0])
 }
 
-// export WrapUDF
 func WrapUDF(inputPtr unsafe.Pointer, f func([]interface{}) (interface{}, error)) unsafe.Pointer {
 	fmt.Println("WrapUDF()")
 	fmt.Printf("Pointer value: %v, type: %T, address: %p\n", inputPtr, inputPtr, &inputPtr)
@@ -108,7 +108,8 @@ func WrapUDF(inputPtr unsafe.Pointer, f func([]interface{}) (interface{}, error)
 	if err != nil {
 		log.Fatal(fmt.Errorf("error applying function: %w", err))
 	}
+	fmt.Println("output", output)
 
 	// Return the output
-	return WriteOutput(output)
+	return writeOutput(output)
 }
