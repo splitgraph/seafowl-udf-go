@@ -23,12 +23,11 @@ func Decode(buf []byte) (interface{}, error) {
 //
 //export alloc
 func alloc(size uintptr) unsafe.Pointer {
-	buffer := make([]byte, 0, size)
+	buffer := make([]byte, size, size)
 	if len(buffer) == 0 {
 		log.Fatal(fmt.Errorf("buffer is empty"))
 	}
 	pointer := unsafe.Pointer(&buffer[0])
-	fmt.Println("pointer", pointer)
 	return pointer
 }
 
