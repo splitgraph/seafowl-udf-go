@@ -106,23 +106,27 @@ func ReadInput(ptr unsafe.Pointer) []interface{} {
 }
 
 func writeOutput(val interface{}) unsafe.Pointer {
+	// Determine length
+	sizer := msgpack.NewSizer()
+	sizer.WriteAny(val)
+	outputSize := sizer.Len()
+
 	// Make a buffer with space for the size at the beginning
-	serializedOutput := make([]byte, SizeNumBytes+unsafe.Sizeof(int64(0)))
+	resultBuffer := make([]byte, SizeNumBytes+uintptr(outputSize))
 
 	// Write the size to the beginning of the buffer
-	outputSize := len(serializedOutput) - int(SizeNumBytes)
-	binary.LittleEndian.PutUint32(serializedOutput, uint32(outputSize))
+	binary.LittleEndian.PutUint32(resultBuffer, uint32(outputSize))
 
 	// Serialize the value
-	err := Encode(val, serializedOutput[SizeNumBytes:])
+	err := Encode(val, resultBuffer[SizeNumBytes:])
 	if err != nil {
 		log.Fatal(fmt.Errorf("error encoding output: %w", err))
 	}
 
 	fmt.Println("outputSize", outputSize)
-	fmt.Println("serializedOutput", serializedOutput, "uint32(outputSize)", uint32(outputSize))
+	fmt.Println("resultBuffer", resultBuffer, "uint32(outputSize)", uint32(outputSize))
 
-	return unsafe.Pointer(&serializedOutput[0])
+	return unsafe.Pointer(&resultBuffer[0])
 }
 
 func WrapUDF(inputPtr unsafe.Pointer, f func([]interface{}) (interface{}, error)) unsafe.Pointer {
