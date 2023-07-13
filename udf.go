@@ -76,16 +76,17 @@ const SizeNumBytes = unsafe.Sizeof(int32(0)) // intended to match Rust's std::me
 
 func ReadInput(ptr unsafe.Pointer) []interface{} {
 	// Convert pointer to byte slice
-	// sizeBuf := (*[SizeNumBytes]byte)(ptr)[:]
-	sizeBuf := []byte{3, 0, 0, 0}
+	sizeBuf := (*[SizeNumBytes]byte)(ptr)[:]
+	// sizeBuf := []byte{3, 0, 0, 0} //DEBUG
 	fmt.Println("sizeBuf", sizeBuf)
-
+	// Assign length of the message to inputSize
 	inputSize := binary.LittleEndian.Uint32(sizeBuf)
-	inputSize = 3
+	// inputSize = 3  //DEBUG
 	fmt.Println("inputSize", inputSize)
+
 	// Convert the pointer to a Go slice of the correct length
-	// inputBuf := (*[1 << 30]byte)(ptr)[:inputSize:inputSize]
-	inputBuf := []byte{146, 1, 103}
+	inputBuf := (*[1 << 30]byte)(ptr)[:inputSize:inputSize]
+	// inputBuf := []byte{146, 1, 103} //DEBUG
 	fmt.Println("inputBuf", inputBuf)
 
 	// Decode the input buffer
