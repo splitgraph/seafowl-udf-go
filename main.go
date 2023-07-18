@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"unsafe"
 )
 
@@ -18,7 +17,6 @@ func addi64(inputPtr unsafe.Pointer) unsafe.Pointer {
 
 		// Call the function
 		result := doAdd(left, right)
-		fmt.Println("result", result)
 
 		// Encode the result
 		return result, nil

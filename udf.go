@@ -77,31 +77,27 @@ const SizeNumBytes = unsafe.Sizeof(int32(0)) // intended to match Rust's std::me
 func ReadInput(ptr unsafe.Pointer) []interface{} {
 	// Convert pointer to byte slice
 	sizeBuf := (*[SizeNumBytes]byte)(ptr)[:]
-	// sizeBuf := []byte{3, 0, 0, 0} //DEBUG
-	fmt.Println("sizeBuf", sizeBuf)
+
 	// Assign length of the message to inputSize
 	inputSize := binary.LittleEndian.Uint32(sizeBuf)
-	// inputSize = 3  //DEBUG
-	fmt.Println("inputSize", inputSize)
+
+	// Skip SizeNumBytes to the actual value
+	ptr = unsafe.Pointer(uintptr(unsafe.Pointer(ptr)) + SizeNumBytes)
 
 	// Convert the pointer to a Go slice of the correct length
 	inputBuf := (*[1 << 30]byte)(ptr)[:inputSize:inputSize]
-	// inputBuf := []byte{146, 1, 103} //DEBUG
-	fmt.Println("inputBuf", inputBuf)
 
 	// Decode the input buffer
 	inputValue, err := Decode(inputBuf)
 	if err != nil {
 		log.Fatal(fmt.Errorf("error reading input buffer: %w", err))
 	}
-	fmt.Println("inputValue", inputValue)
 
 	// Convert input value to array
 	inputArray, ok := inputValue.([]interface{})
 	if !ok {
 		log.Fatal(fmt.Errorf("error reading input buffer as array, found instead: %v", inputValue))
 	}
-	fmt.Println("inputArray", inputArray)
 
 	return inputArray
 }
@@ -124,25 +120,18 @@ func writeOutput(val interface{}) unsafe.Pointer {
 		log.Fatal(fmt.Errorf("error encoding output: %w", err))
 	}
 
-	fmt.Println("outputSize", outputSize)
-	fmt.Println("resultBuffer", resultBuffer, "uint32(outputSize)", uint32(outputSize))
-
 	return unsafe.Pointer(&resultBuffer[0])
 }
 
 func WrapUDF(inputPtr unsafe.Pointer, f func([]interface{}) (interface{}, error)) unsafe.Pointer {
-	fmt.Printf("WrapUDF() pointer value: %v, type: %T\n", inputPtr, inputPtr)
-
 	// Read the input
 	input := ReadInput(inputPtr)
-	fmt.Println("input", input)
 
 	// Call the function
 	output, err := f(input)
 	if err != nil {
 		log.Fatal(fmt.Errorf("error applying function: %w", err))
 	}
-	fmt.Println("output", output)
 
 	// Return the output
 	return writeOutput(output)
