@@ -2,7 +2,7 @@ package main
 
 import "testing"
 
-func TestAddInts(t *testing.T) {
+func TestDoAdd(t *testing.T) {
 	sum := doAdd(int64(1), int64(2))
 	expected := int64(3)
 
