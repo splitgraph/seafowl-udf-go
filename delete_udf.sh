@@ -11,5 +11,5 @@ IFS=", "
 joined_input_types="${input_types[*]}"
 
 curl -i -H "Content-Type: application/json" $host/q -d@- <<EOF
-{"query": "DROP FUNCTION addi64;"}
+{"query": "DROP FUNCTION $function_name;"}
 EOF
