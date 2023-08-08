@@ -16,7 +16,7 @@ input_types=("BIGINT" "BIGINT")
 host="localhost:8080"
 
 curl -i -H "Content-Type: application/json" $host/q -d@- <<EOF
-{"query": "CREATE FUNCTION $function_name AS '{
+{"query": "CREATE OR REPLACE FUNCTION $function_name AS '{
   \"entrypoint\": \"$wasm_export\",
   \"language\": \"wasmMessagePack\",
   \"input_types\": [\"$(joinByString '\", \"' "${input_types[@]}")\"],
